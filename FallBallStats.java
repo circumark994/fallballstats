@@ -31,7 +31,7 @@ class Player {
 		return win - adjustWin;
 	}
 	public double getRate() {
-		return Double.parseDouble(FallBallStats.frame.get_rate(getWin(), getMatch()));
+		return Double.parseDouble(FallBallStats.frame.calRate(getWin(), getMatch()));
 	}
 }
 
@@ -77,7 +77,7 @@ class PlayerList {
 		String str = "<html>";
 		int no = 0;
 		for (Player player : list) {
-			if (player.match >= FallBallStats.frame.ranking_filter_flg) {
+			if (player.getMatch() >= FallBallStats.frame.ranking_filter_flg) {
 				no += 1;
 				str = str + pad(no)+" ";
 				str = str + pad(player.getWin()) + "/";
@@ -182,7 +182,7 @@ public class FallBallStats extends JFrame{
 	ranking_sort_flg = 0;
 	ranking_filter_flg = 0;
 
-	count_label = new JLabel("0勝 / 0試合 (00.00%)");
+	count_label = new JLabel("0勝 / 0試合 (0.0%)");
 	count_label.setFont(new Font(fontFamily, Font.BOLD, 20));
 	count_label.setBounds(15, 20, 300, 20);
 	p.add(count_label);
@@ -244,6 +244,10 @@ public class FallBallStats extends JFrame{
 	  			ranking_filter.setText("20試合以上");
 	  			break;
 	  		case 20:
+	  			ranking_filter_flg = 25;
+	  			ranking_filter.setText("25試合以上");
+	  			break;
+	  		case 25:
 	  			ranking_filter_flg = 30;
 	  			ranking_filter.setText("30試合以上");
 	  			break;
@@ -299,7 +303,7 @@ public class FallBallStats extends JFrame{
 	});
   }
 
-  private void update_cnt(int flg) {
+  private void updateCount(int flg) {
     String name_selected = (String)shinpan_list.getSelectedItem();
 	Player player = playerList.getByName(name_selected);
 	if (player == null) return;
@@ -316,7 +320,7 @@ public class FallBallStats extends JFrame{
 	playerlogthread.displayRanking();
   }
 
-  static String get_rate(int win, int match) {
+  static String calRate(int win, int match) {
 	if (match == 0) return "0.00";
 	BigDecimal win_dec = new BigDecimal(win);
 	BigDecimal match_dec = new BigDecimal(match);
@@ -331,7 +335,7 @@ public class FallBallStats extends JFrame{
 	button.setFont(new Font(fontFamily, Font.BOLD, 14));
 	button.addActionListener(new ActionListener() {
 	  public void actionPerformed(ActionEvent e) {
-			update_cnt(flg);
+			updateCount(flg);
 	  }
 	});
 	p.add(button);
@@ -384,7 +388,7 @@ class PlayerlogThread extends Thread{
 		}
 	}
 
-	private void update_shinpan_list(){
+	private void updateShinpanList(){
 		FallBallStats.frame.shinpan_list.removeAllItems();
 		for (Player player: FallBallStats.playerList.list) {
 			FallBallStats.frame.shinpan_list.addItem(player.name);
@@ -480,7 +484,7 @@ class PlayerlogThread extends Thread{
 				} else if ((text.indexOf("[ClientGameManager] Server notifying that the round is over.") != -1) ||
 							(text.indexOf("[StateMainMenu] Creating or joining lobby") != -1) ||
 							(text.indexOf("[StateMatchmaking] Begin matchmaking") != -1)) {
-					update_shinpan_list();
+					updateShinpanList();
 					match_count += 1;
 					// System.out.println("DETECT ROUND OVER " + FallBallStats.playerList.getCurrentPlayerCount() + " players " + match_count + " matches");
 					// tempWin 状態を match, win に反映
