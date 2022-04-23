@@ -268,10 +268,10 @@ public class FallBallStats extends JFrame{
 	p.add(shinpan_list);
 
 	shinpan_win = new JButton();
-	make_button_func(shinpan_win, "審判(勝ち)", 0);
+	makeButtonFunc(shinpan_win, "審判(勝ち)", 0);
 	shinpan_win.setBounds(15, 120, 100, 25);
 	shinpan_lose = new JButton();
-	make_button_func(shinpan_lose, "審判(負け)", 1);
+	makeButtonFunc(shinpan_lose, "審判(負け)", 1);
 	shinpan_lose.setBounds(15, 150, 100, 25);
 
 	Container contentPane = getContentPane();
@@ -330,7 +330,7 @@ public class FallBallStats extends JFrame{
 	return String.valueOf(rate);
   }
 
-  private void make_button_func(JButton button, String name, int flg) {
+  private void makeButtonFunc(JButton button, String name, int flg) {
 	button.setText(name);
 	button.setFont(new Font(fontFamily, Font.BOLD, 14));
 	button.addActionListener(new ActionListener() {
