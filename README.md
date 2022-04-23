@@ -7,7 +7,7 @@ PC版フォールガイズ(Fall Guys)向けのカスタムフォールボール�
 ## 初期設定  
 (1) Java環境をインストールする必要があります。  
 (2) path.iniをメモ帳で開いて、Player.logがある場所(パス)を書き込んでください。  
-   例. C:/Users/usamune/AppData/LocalLow/Mediatonic/FallGuys_client/Player.log  
+   例. C:/Users/test/AppData/LocalLow/Mediatonic/FallGuys_client/Player.log  
   
 ## 使い方  
 フォールガイズと一緒に"FallBallStats.jar"を起動しておくだけです。  
