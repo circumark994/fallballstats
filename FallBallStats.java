@@ -4,19 +4,21 @@ import java.awt.datatransfer.*;
 import javax.swing.*;
 import java.io.*;
 import java.util.*;
+import java.util.Comparator;
+import java.util.Collections;
 import java.nio.file.*;
 import java.nio.charset.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
-import java.util.Comparator;
-import java.util.Collections;
 
 class Player {
 	String name;
 	int id;
 	int match;
 	int win;
+	int sameteam;
+	int sameteamWin;
 	Boolean tempWin;
 	boolean exist;
 	int adjustMatch;	// 審判回数補正
@@ -33,6 +35,12 @@ class Player {
 	}
 	public double getRate() {
 		return Double.parseDouble(FallBallStats.frame.calRate(getWin(), getMatch()));
+	}
+	public double getRateSameteam() {
+		return Double.parseDouble(FallBallStats.frame.calRate(sameteam, match));
+	}
+	public double getRateSameteamWin() {
+		return Double.parseDouble(FallBallStats.frame.calRate(sameteamWin, sameteam));
 	}
 }
 
@@ -61,6 +69,13 @@ class PlayerList {
 		}
 		return c;
 	}
+
+	public Boolean getMytempWin(){
+		for (Player player : list) {
+			if (FallBallStats.frame.my_name.equals(player.name)) return player.tempWin;
+		}
+		return null;
+	}
 	/*
 	public Player getByCurrentId(int id) {
 		for (Player player : list) {
@@ -70,25 +85,47 @@ class PlayerList {
 	}
 	*/
 	public String getRanking(int sort) {
-		if (sort == 0) {
-			Collections.sort(list, new PlayerComparatorWin());
-		} else {
-			Collections.sort(list, new PlayerComparatorRate());
+		switch (sort){
+			case 0: Collections.sort(list, new PlayerComparatorWin()); break;
+			case 1: Collections.sort(list, new PlayerComparatorRate()); break;
+			case 2: Collections.sort(list, new PlayerComparatorSameteam()); break;
+			case 3: Collections.sort(list, new PlayerComparatorSameteamWin()); break;
 		}
+
 		String str = "<html>";
 		int no = 0;
 		for (Player player : list) {
 			if (player.getMatch() >= FallBallStats.frame.ranking_filter_flg) {
 				no += 1;
 				str = str + pad(no)+" ";
-				str = str + pad(player.getWin()) + "/";
-				str = str + pad(player.getMatch()) + "(";
-				String rate_str = String.valueOf(player.getRate());
-				String[] rate_sp = rate_str.split("\\.", 2);
-				if (rate_sp[0].length() == 1) { rate_str = "0" + rate_str; }
-				if (rate_sp[1].length() == 1) { rate_str = rate_str + "0"; }
-				str = str + rate_str + "%) ";
-
+				
+				if (sort != 2){
+					str = str + pad(player.getWin()) + "/";
+					str = str + pad(player.getMatch()) + "(";
+					String rate_str = String.valueOf(player.getRate());
+					String[] rate_sp = rate_str.split("\\.", 2);
+					if (rate_sp[0].length() == 1) { rate_str = "0" + rate_str; }
+					if (rate_sp[1].length() == 1) { rate_str = rate_str + "0"; }
+					str = str + rate_str + "%) ";
+				} else {
+					str = str + pad(player.sameteam) + "/";
+					str = str + pad(player.match) + "(";
+					String rate_str = String.valueOf(player.getRateSameteam());
+					String[] rate_sp = rate_str.split("\\.", 2);
+					if (rate_sp[0].length() == 1) { rate_str = "0" + rate_str; }
+					if (rate_sp[1].length() == 1) { rate_str = rate_str + "0"; }
+					str = str + rate_str + "%) ";
+				}
+				if (sort == 3){
+					str = str + pad(player.sameteamWin) + "/";
+					str = str + pad(player.sameteam) + "/";
+					str = str + pad(player.match) + "(";
+					String rate_str = String.valueOf(player.getRateSameteamWin());
+					String[] rate_sp = rate_str.split("\\.", 2);
+					if (rate_sp[0].length() == 1) { rate_str = "0" + rate_str; }
+					if (rate_sp[1].length() == 1) { rate_str = rate_str + "0"; }
+					str = str + rate_str + "%) ";
+				}
 				str = str + player.name + "<br>";
 			}
 		}
@@ -112,6 +149,18 @@ class PlayerList {
 			return p1.getRate() > p2.getRate() ? -1 : 1;
 		}
 	}
+	static class PlayerComparatorSameteam implements Comparator<Player> {
+		@Override
+		public int compare(Player p1, Player p2) {
+			return p1.getRateSameteam() > p2.getRateSameteam() ? -1 : 1;
+		}
+	}
+	static class PlayerComparatorSameteamWin implements Comparator<Player> {
+		@Override
+		public int compare(Player p1, Player p2) {
+			return p1.getRateSameteamWin() > p2.getRateSameteamWin() ? -1 : 1;
+		}
+	}
 }
 
 public class FallBallStats extends JFrame{
@@ -127,7 +176,7 @@ public class FallBallStats extends JFrame{
 	UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
   	int pt_x = 10;
   	int pt_y = 10;
-  	int size_x = 600;
+  	int size_x = 735;
   	int size_y = 230;
   	try{
   	  File file = new File("window_pt_size.ini");
@@ -216,16 +265,15 @@ public class FallBallStats extends JFrame{
 
 	ranking_sort = new JButton("勝利数順");
 	ranking_sort.setFont(new Font(fontFamily, Font.BOLD, 13));
-	ranking_sort.setBounds(375, 15, 85, 25);
+	ranking_sort.setBounds(375, 15, 95, 25);
 	ranking_sort.addActionListener(new ActionListener() {
 	  public void actionPerformed(ActionEvent e) {
-	  	if (ranking_sort_flg == 0) {
-	  		ranking_sort_flg = 1;
-	  		ranking_sort.setText("勝率順");
-	  	} else {
-	  		ranking_sort_flg = 0;
-	  		ranking_sort.setText("勝利数順");
-	  	}
+	    switch(ranking_sort_flg){
+	    	case 0: ranking_sort_flg = 1; ranking_sort.setText("勝率順"); break;
+	    	case 1: ranking_sort_flg = 2; ranking_sort.setText("同チ率順"); break;
+	    	case 2: ranking_sort_flg = 3; ranking_sort.setText("同チ勝率順"); break;
+	    	case 3: ranking_sort_flg = 0; ranking_sort.setText("勝利数順"); break;
+	    }
 		playerlogthread.displayRanking();
 	  }
 	});
@@ -233,7 +281,7 @@ public class FallBallStats extends JFrame{
 
 	ranking_filter = new JButton("全表示");
 	ranking_filter.setFont(new Font(fontFamily, Font.BOLD, 13));
-	ranking_filter.setBounds(465, 15, 105, 25);
+	ranking_filter.setBounds(475, 15, 105, 25);
 	ranking_filter.addActionListener(new ActionListener() {
 	  public void actionPerformed(ActionEvent e) {
 	  	switch(ranking_filter_flg) {
@@ -504,10 +552,17 @@ class PlayerlogThread extends Thread{
 					match_count += 1;
 					// System.out.println("DETECT ROUND OVER " + FallBallStats.playerList.getCurrentPlayerCount() + " players " + match_count + " matches");
 					// tempWin 状態を match, win に反映
+					// tempWinの状態が自分と同じだったら同じチームとみなす
+
+					Boolean mytempWin = FallBallStats.playerList.getMytempWin();
 					for (Player player : FallBallStats.playerList.list) {
 						if (player.tempWin != null) {
 							player.match += 1;
 							player.win += player.tempWin ? 1 : 0;
+							if (mytempWin == player.tempWin){
+								player.sameteam += 1;
+								if (mytempWin == Boolean.TRUE) player.sameteamWin += 1;
+							}
 							player.tempWin = null;
 						}
 					}
