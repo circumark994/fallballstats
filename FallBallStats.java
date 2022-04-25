@@ -1,5 +1,6 @@
 import java.awt.event.*;
 import java.awt.*;
+import java.awt.datatransfer.*;
 import javax.swing.*;
 import java.io.*;
 import java.util.*;
@@ -174,6 +175,7 @@ public class FallBallStats extends JFrame{
   private JButton ranking_filter;
   static int ranking_filter_flg;
   static JComboBox<String> shinpan_list;
+  private JButton clipboard;
 
   FallBallStats() {
 	p = new JPanel();
@@ -255,7 +257,6 @@ public class FallBallStats extends JFrame{
 	  			ranking_filter_flg = 0;
 	  			ranking_filter.setText("全表示");
 	  			break;
-
 	  	}
 		playerlogthread.displayRanking();
 	  }
@@ -273,6 +274,21 @@ public class FallBallStats extends JFrame{
 	shinpan_lose = new JButton();
 	makeButtonFunc(shinpan_lose, "審判(負け)", 1);
 	shinpan_lose.setBounds(15, 150, 100, 25);
+
+	clipboard = new JButton("参加者一覧をコピー");
+	clipboard.setFont(new Font(fontFamily, Font.BOLD, 14));
+	clipboard.addActionListener(new ActionListener() {
+	  public void actionPerformed(ActionEvent e) {
+	  	String value = "";
+	  	for (Player player: FallBallStats.playerList.list) {
+	  		value = value + player.name + "\n";
+	  	}
+	  	Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+	  	clipboard.setContents(new StringSelection(value), null);
+	  }
+	});
+	clipboard.setBounds(120, 120, 150, 25);
+	p.add(clipboard);
 
 	Container contentPane = getContentPane();
 	contentPane.add(p);
