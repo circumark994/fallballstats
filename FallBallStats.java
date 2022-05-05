@@ -76,14 +76,6 @@ class PlayerList {
 		}
 		return null;
 	}
-	/*
-	public Player getByCurrentId(int id) {
-		for (Player player : list) {
-			if (id == player.id) return player;
-		}
-		return null;
-	}
-	*/
 	public String getRanking(int sort) {
 		switch (sort){
 			case 0: Collections.sort(list, new PlayerComparatorWin()); break;
@@ -165,14 +157,12 @@ class PlayerList {
 
 public class FallBallStats extends JFrame{
   static FallBallStats frame;
-  static PlayerlogThread playerlogthread;
+  private PlayerlogThread playerlogthread;
   static String path_str;
   static String fontFamily = "Meiryo UI";
   static PlayerList playerList = new PlayerList();
 
   public static void main(String[] args) throws Exception {
-//	UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
-//	UIManager.setLookAndFeel("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
 	UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
   	int pt_x = 10;
   	int pt_y = 10;
@@ -204,7 +194,7 @@ public class FallBallStats extends JFrame{
 	frame = new FallBallStats();
 	frame.setResizable(true);
 	frame.setBounds(pt_x, pt_y, size_x, size_y);
-	frame.setTitle("Custom Fall Ball Stats");
+	frame.setTitle("CustomFallBallStats");
 	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	frame.setVisible(true);
   }
@@ -474,13 +464,6 @@ class PlayerlogThread extends Thread{
 		}
 	}
 
-	static String dump(byte[] bytes) {
-		StringBuilder b = new StringBuilder();
-		for (int i = 0; i < bytes.length; i += 1) {
-			b.append(Integer.toString(bytes[i] & 0xff, 16)).append(' ');
-		}
-		return b.toString();
-	}
 	private void getPlayersScore(String text) {
 		switch(match_status) {
 			case 0: // wait for a game
