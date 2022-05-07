@@ -1,16 +1,40 @@
-import java.awt.event.*;
-import java.awt.*;
-import java.awt.datatransfer.*;
-import javax.swing.*;
-import java.io.*;
-import java.util.*;
-import java.util.Comparator;
-import java.util.Collections;
-import java.nio.file.*;
-import java.nio.charset.*;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
 
 class Player {
 	String name;
@@ -158,7 +182,6 @@ class PlayerList {
 public class FallBallStats extends JFrame{
   static FallBallStats frame;
   private PlayerlogThread playerlogthread;
-  static String path_str;
   static String fontFamily = "Meiryo UI";
   static PlayerList playerList = new PlayerList();
 
@@ -179,13 +202,6 @@ public class FallBallStats extends JFrame{
   	  	pt_y = Integer.parseInt(value[1]);
   	  	size_x = Integer.parseInt(value[2]);
   	  	size_y = Integer.parseInt(value[3]);
-  	  }
-  	  br.close();
-
-  	  file = new File("path.ini");
-  	  br = new BufferedReader(new FileReader(file));
-  	  while((str = br.readLine()) != null) {
-  	  	path_str = str;
   	  }
   	  br.close();
 	} catch(FileNotFoundException e) { System.exit(1);
@@ -406,14 +422,15 @@ class PlayerlogThread extends Thread{
 	private boolean first_read;
 
 	public void run() {
-		log_path = Paths.get(FallBallStats.frame.path_str);
+		String path_str = System.getProperty("user.home") + "/AppData/LocalLow/Mediatonic/FallGuys_client/Player.log";
+		log_path = Paths.get(path_str);
 		line_cnt = 0;
 		file_size = 0;
 		match_status = 0;
 		first_read = false;
 
 		while (true) {
-			long cur_file_size = new File(FallBallStats.frame.path_str).length();
+			long cur_file_size = new File(path_str).length();
 			if (file_size > cur_file_size) { line_cnt = 0; match_status = 0; }
 			file_size = cur_file_size;
 
