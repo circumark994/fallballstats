@@ -218,6 +218,7 @@ public class FallBallStats extends JFrame{
   private JPanel p;
   static JLabel count_label;
   static String my_name;
+  static String my_id;
   static JLabel read_date;
   static JLabel fliper1;
   static JLabel fliper2;
@@ -236,6 +237,7 @@ public class FallBallStats extends JFrame{
 	p = new JPanel();
 	p.setLayout(null);
 	my_name = "";
+	my_id = "";
 	ranking_sort_flg = 0;
 	ranking_filter_flg = 0;
 
@@ -474,17 +476,27 @@ class PlayerlogThread extends Thread{
 	}
 
 	private void getMyName(String text) {
-		if ((first_read == false) && (text.indexOf("[UserInfo] Player Name:") != -1)) {
-			String[] sp = text.split("Player Name: ", 2);
-			FallBallStats.my_name = sp[1];
-			first_read = true;
+		if (first_read == false) {
+			if (text.indexOf("Requesting spawn of local player") != -1){
+				String[] sp = text.split("Requesting spawn of local player, ID=", 2);
+				FallBallStats.my_id = sp[1];
+			} else if (text.indexOf("[CameraDirector] Adding Spectator target") != -1) {
+				String[] sp1 = text.split("Adding Spectator target ", 2);
+				String[] sp2 = sp1[1].split(" with Party ID", 2);
+				String[] sp3 = sp2[1].split("playerID: ", 2);
+				
+				if (sp3[1].equals(FallBallStats.my_id)){
+					FallBallStats.my_name = sp2[0].substring(0, sp2[0].length()-6);
+					first_read = true;
+				}
+			}
 		}
 	}
 
 	private void getPlayersScore(String text) {
 		switch(match_status) {
 			case 0: // wait for a game
-				if (text.indexOf("[HandleSuccessfulLogin] Selected show is event_only_fall_ball_custom_lobby") != -1){
+				if (text.indexOf("[HandleSuccessfulLogin] Selected show is event_only_fall_ball_template") != -1){
 					match_status = 1;
 				}
 				break;
@@ -508,7 +520,7 @@ class PlayerlogThread extends Thread{
 					String[] sp3 = sp2[1].split("playerID: ", 2);
 
 					player_count += 1;
-					String player_name = sp2[0].substring(4, sp2[0].length()-6);
+					String player_name = sp2[0].substring(0, sp2[0].length()-6);
 					int player_id = Integer.parseInt(sp3[1]);
 					Player player = FallBallStats.playerList.getByName(player_name);
 					// System.out.println(player_count + " Player " + player_name + " (id=" + player_id + ") spwaned.");
@@ -573,13 +585,13 @@ class PlayerlogThread extends Thread{
 	}
 
 	private void getFlipperStatus(String text) {
-		if ((text.indexOf("SeededRandomisable 12: Flipper has initial flip direction:")) != -1) {
+		if ((text.indexOf("SeededRandomisable 19: Flipper has initial flip direction:")) != -1) {
 		   if (text.substring(text.length() - 6).equals("North ")) {
 			 FallBallStats.frame.fliper1.setText("青パネル: 青側");
 		   } else {
 			 FallBallStats.frame.fliper1.setText("青パネル: 黄側");
 		   }
-		} else if ((text.indexOf("SeededRandomisable 13: Flipper has initial flip direction:")) != -1) {
+		} else if ((text.indexOf("SeededRandomisable 20: Flipper has initial flip direction:")) != -1) {
 		   if (text.substring(text.length() - 6).equals("North ")) {
 			 FallBallStats.frame.fliper2.setText("黄パネル: 青側");
 		   } else {
